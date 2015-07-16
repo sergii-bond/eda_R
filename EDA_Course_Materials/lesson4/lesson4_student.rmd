@@ -12,7 +12,13 @@ Notes:
 Notes:
 
 ```{r Scatterplots}
-
+library(ggplot2)
+pf <- read.csv('../lesson3/pseudo_facebook.tsv', sep = '\t')
+#You can also read in the data using the following code: 
+#read.delim('pseudo_facebook.tsv')
+names(pf)
+#names(pf)[c(-2, -1)]
+qplot(x = age, y = friend_count, data = pf)
 ```
 
 ***
@@ -20,12 +26,17 @@ Notes:
 #### What are some things that you notice right away?
 Response:
 
+In general, it is a good idea to think about what caused certain oddities or values in data sets. This can help explain dirty data.
 ***
 
 ### ggplot Syntax
 Notes:
 
 ```{r ggplot Syntax}
+#The ggplot syntax for the scatterplot: 
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point() +
+  xlim(13, 90)
 
 ```
 
@@ -35,7 +46,13 @@ Notes:
 Notes:
 
 ```{r Overplotting}
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point(alpha = 1/20) +
+  xlim(13, 90)
 
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_jitter(alpha = 1/20) +
+  xlim(13, 90)
 ```
 
 #### What do you notice in the plot?
@@ -45,15 +62,24 @@ Response:
 
 ### Coord_trans()
 Notes:
+Look up the documentation for coord_trans() by running this line of code ?coord_trans or visit http://docs.ggplot2.org/current/coord_trans.html.
 
 ```{r Coord_trans()}
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point(alpha = 1/20, position = position_jitter(h = 0)) +
+  coord_trans(y = "sqrt") +
+  xlim(13, 90) 
 
+#sqrt(pf$friend_count)
 ```
 
-#### Look up the documentation for coord_trans() and add a layer to the plot that transforms friend_count using the square root function. Create your plot!
+#### Friends initiated vs. age
 
 ```{r}
-
+names(pf)
+ggplot(aes(x = age, y = friendships_initiated), data = pf) +
+  geom_point(alpha = 1/20, position = position_jitter(h = 0)) + 
+  coord_trans(y = "sqrt")
 ```
 
 #### What do you notice?
@@ -76,15 +102,36 @@ Notes:
 
 ### Conditional Means
 Notes:
+Another warning: Version 0.4 of R has a bug when using the median function on the summarize layer, depending on the nature of the data being summarized. You may need to cast the data as a numeric (float) type when using it on your local machine, e.g. median(as.numeric(var)).
+There are other ways to work with data and create new data frames without using the dplyr package. Learn about the R functions lapply, tapply, and split in a [blog post]( http://rollingyours.wordpress.com/2014/10/20/the-lapply-command-101/) 
 
 ```{r Conditional Means}
+library(dplyr)
+age_groups = group_by(pf, age)
+pf.fc_by_age = summarize(age_groups, 
+          friend_count_mean = mean(friend_count),
+          friend_count_median = median(friend_count),
+          n = n())
+pf.fc_by_age = arrange(pf.fc_by_age, age)
+head(pf.fc_by_age)
+```
 
+```{r Conditional Means, Alternative}
+library(dplyr)
+pf.fc_by_age <- pf %>% group_by(age) %>% 
+  summarize(friend_count_mean = mean(friend_count),
+          friend_count_median = median(friend_count),
+          n = n()) %>%
+  arrange(age)
+head(pf.fc_by_age, 10)
 ```
 
 Create your plot!
 
 ```{r Conditional Means Plot}
-
+# Plot mean friend count vs. age using a line graph.
+ggplot(aes(x = age, y = friend_count_mean), data = pf.fc_by_age) +
+  geom_line()
 ```
 
 ***

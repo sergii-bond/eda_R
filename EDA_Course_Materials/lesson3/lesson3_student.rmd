@@ -351,13 +351,41 @@ qplot(x = www_likes + 1, y = ..density..,
 Notes:
 
 ```{r Box Plots}
-
+qplot(geom = 'boxplot', 
+      x = gender, y = friend_count, 
+      data = subset(pf, !is.na(gender)))
 ```
 
 #### Adjust the code to focus on users who have friend counts between 0 and 1000.
 
 ```{r}
 
+# all three commands remove data points before calculation
+qplot(geom = 'boxplot', 
+      x = gender, y = friend_count, 
+      data = subset(pf, friend_count <= 1000 & !is.na(gender)))
+
+qplot(geom = 'boxplot', 
+      x = gender, y = friend_count, 
+      data = subset(pf, !is.na(gender)), ylim = c(0, 1000)) 
+
+qplot(geom = 'boxplot', 
+      x = gender, y = friend_count, 
+      data = subset(pf, !is.na(gender))) +
+  scale_y_continuous(limits = c(0, 1000)) 
+
+# this commands doesn't remove data points, only changes the display
+qplot(geom = 'boxplot', 
+      x = gender, y = friend_count, 
+      data = subset(pf, !is.na(gender))) +
+  coord_cartesian(ylim = c(0, 1000)) 
+
+qplot(geom = 'boxplot', 
+      x = gender, y = friend_count, 
+      data = subset(pf, !is.na(gender))) +
+  coord_cartesian(ylim = c(0, 250)) 
+
+by(pf$friend_count, pf$gender, summary)
 ```
 
 ***
@@ -385,7 +413,13 @@ Response:
 Notes:
 
 ```{r Getting Logical}
-
+summary(pf$mobile_likes > 0)
+pf$mobile_check_in <- NA
+pf$mobile_check_in <- ifelse(pf$mobile_likes > 0, 1, 0)
+pf$mobile_check_in <- factor(pf$mobile_check_in)
+x = summary(pf$mobile_check_in)
+x[2] / (x[1] + x[2])
+sum(pf$mobile_check_in == 1) / length(pf$mobile_likes)
 ```
 
 Response:
