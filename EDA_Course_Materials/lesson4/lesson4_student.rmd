@@ -202,7 +202,15 @@ Notes:
 Notes:
 
 ```{r}
+ggplot(aes(x = www_likes_received, y = likes_received), data = pf) +
+  coord_trans(y = "sqrt", x = "sqrt") + 
+  geom_point()  
 
+ggplot(aes(x = www_likes_received, y = likes_received), data = pf) +
+  geom_point() +
+  xlim(0, quantile(pf$www_likes_received, 0.95)) +
+  ylim(0, quantile(pf$likes_received, 0.95)) +
+  geom_smooth(method = 'lm', color = 'red')
 ```
 
 ***
@@ -217,7 +225,7 @@ Notes:
 What's the correlation betwen the two variables? Include the top 5% of values for the variable in the calculation and round to 3 decimal places.
 
 ```{r Correlation Calcuation}
-
+with(pf, cor(www_likes_received, likes_received))
 ```
 
 Response:
@@ -235,12 +243,14 @@ Notes:
 ```{r More Caution With Correlation}
 install.packages('alr3')
 library(alr3)
+data("Mitchell")
 ```
 
 Create your plot!
 
 ```{r Temp vs Month}
-
+ggplot(aes(x = Month, y = Temp), data = Mitchell) +
+  geom_point()
 ```
 
 ***
