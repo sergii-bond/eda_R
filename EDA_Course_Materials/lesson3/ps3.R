@@ -1,0 +1,291 @@
+
+library(ggplot2)
+data(diamonds)
+#qplot(x = price, data = diamonds) 
+ggplot(aes(x = price), data = diamonds) + 
+   geom_histogram(binwidth = 200, color = 'black', fill = '#099DD9')
+
+summary(diamonds$price)
+sum(diamonds$price < 500)
+sum(diamonds$price < 250)
+sum(diamonds$price >= 15000)
+
+# Explore the largest peak in the
+# price histogram you created earlier.
+
+# Try limiting the x-axis, altering the bin width,
+# and setting different breaks on the x-axis.
+
+# There won’t be a solution video for this
+# question so go to the discussions to
+# share your thoughts and discover
+# what other people find.
+
+# You can save images by using the ggsave() command.
+# ggsave() will save the last plot created.
+# For example...
+#                  qplot(x = price, data = diamonds)
+#                  ggsave('priceHistogram.png')
+
+# ggsave currently recognises the extensions eps/ps, tex (pictex),
+# pdf, jpeg, tiff, png, bmp, svg and wmf (windows only).
+
+# Submit your final code when you are ready.
+
+# TYPE YOUR CODE BELOW THE LINE
+# ======================================================================
+
+ggplot(aes(x = price), data = diamonds) + 
+   geom_histogram(binwidth = 200, color = 'black', fill = '#099DD9') +
+  scale_x_continuous(limits = c(0, 4000), breaks = seq(0, 4000, 250)) +
+  scale_y_continuous(breaks = seq(0, 6000, 500))
+
+# Break out the histogram of diamond prices by cut.
+
+# You should have five histograms in separate
+# panels on your resulting plot.
+
+# TYPE YOUR CODE BELOW THE LINE
+# ======================================================
+ggplot(aes(x = price), data = diamonds) + 
+   geom_histogram(binwidth = 200, color = 'black', fill = '#099DD9') +
+  facet_wrap(~cut, ncol = 3)
+
+tapply(diamonds$price, diamonds$cut, max)
+tapply(diamonds$price, diamonds$cut, min)
+tapply(diamonds$price, diamonds$cut, median)
+
+# In the two last exercises, we looked at
+# the distribution for diamonds by cut.
+
+# Run the code below in R Studio to generate
+# the histogram as a reminder.
+
+# ===============================================================
+
+qplot(x = price, data = diamonds) + facet_wrap(~cut)
+
+# ===============================================================
+
+# In the last exercise, we looked at the summary statistics
+# for diamond price by cut. If we look at the output table, the
+# the median and quartiles are reasonably close to each other.
+
+# diamonds$cut: Fair
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#     337    2050    3282    4359    5206   18570 
+# ------------------------------------------------------------------------ 
+# diamonds$cut: Good
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#     327    1145    3050    3929    5028   18790 
+# ------------------------------------------------------------------------ 
+# diamonds$cut: Very Good
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#     336     912    2648    3982    5373   18820 
+# ------------------------------------------------------------------------ 
+# diamonds$cut: Premium
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#     326    1046    3185    4584    6296   18820 
+# ------------------------------------------------------------------------ 
+# diamonds$cut: Ideal
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#     326     878    1810    3458    4678   18810 
+
+# This means the distributions should be somewhat similar,
+# but the histograms we created don't show that.
+
+# The 'Fair' and 'Good' diamonds appear to have 
+# different distributions compared to the better
+# cut diamonds. They seem somewhat uniform
+# on the left with long tails on the right.
+
+# Let's look in to this more.
+
+# Look up the documentation for facet_wrap in R Studio.
+# Then, scroll back up and add a parameter to facet_wrap so that
+# the y-axis in the histograms is not fixed. You want the y-axis to
+# be different for each histogram.
+
+# If you want a hint, check out the Instructor Notes.
+
+qplot(x = price, data = diamonds) + facet_wrap(~cut, scales = "free")
+
+# Create a histogram of price per carat
+# and facet it by cut. You can make adjustments
+# to the code from the previous exercise to get
+# started.
+
+# Adjust the bin width and transform the scale
+# of the x-axis using log10.
+
+# Submit your final code when you are ready.
+
+# ENTER YOUR CODE BELOW THIS LINE.
+# ===========================================================================
+
+qplot(x = price, data = diamonds, binwidth = 0.1)  + 
+  facet_wrap(~cut, scales = "free") +
+  scale_x_log10()
+
+# Investigate the price of diamonds using box plots,
+# numerical summaries, and one of the following categorical
+# variables: cut, clarity, or color.
+
+# There won’t be a solution video for this
+# exercise so go to the discussion thread for either
+# BOXPLOTS BY CLARITY, BOXPLOT BY COLOR, or BOXPLOTS BY CUT
+# to share you thoughts and to
+# see what other people found.
+
+# You can save images by using the ggsave() command.
+# ggsave() will save the last plot created.
+# For example...
+#                  qplot(x = price, data = diamonds)
+#                  ggsave('priceHistogram.png')
+
+# ggsave currently recognises the extensions eps/ps, tex (pictex),
+# pdf, jpeg, tiff, png, bmp, svg and wmf (windows only).
+
+# Copy and paste all of the code that you used for
+# your investigation, and submit it when you are ready.
+# =================================================================
+
+qplot(x = color, y = price, data = diamonds,
+      geom = 'boxplot') +
+  coord_cartesian(ylim = c(0, 8000))
+
+by(diamonds$price, diamonds$color, summary)
+IQR(subset(diamonds, color == 'D')$price)
+IQR(subset(diamonds, color == 'J')$price)
+
+# Investigate the price per carat of diamonds across
+# the different colors of diamonds using boxplots.
+
+# Go to the discussions to
+# share your thoughts and to discover
+# what other people found.
+
+# You can save images by using the ggsave() command.
+# ggsave() will save the last plot created.
+# For example...
+#                  qplot(x = price, data = diamonds)
+#                  ggsave('priceHistogram.png')
+
+# ggsave currently recognises the extensions eps/ps, tex (pictex),
+# pdf, jpeg, tiff, png, bmp, svg and wmf (windows only).
+
+# Copy and paste all of the code that you used for
+# your investigation, and submit it when you are ready.
+
+# SUBMIT YOUR CODE BELOW THIS LINE
+# ===================================================================
+qplot(x = color, y = price / carat, data = diamonds,
+      geom = 'boxplot') +
+  coord_cartesian(ylim = c(2000, 6000))
+
+# weight
+qplot(x = carat, data = diamonds, binwidth = 0.01, 
+   color = I('black'), fill = I('#099DD9')) +
+  scale_x_continuous(limits = c(0.3, 1.25), breaks = seq(0,1.25,0.1))
+
+
+# The Gapminder website contains over 500 data sets with information about
+# the world's population. Your task is to download a data set of your choice
+# and create 2-5 plots that make use of the techniques from Lesson 3.
+
+# You might use a simple histogram, a boxplot split over a categorical variable,
+# or a frequency polygon. The choice is yours!
+
+# You can find a link to the Gapminder website in the Instructor Notes.
+
+# Once you've completed your investigation, create a post in the discussions that includes:
+#       1. any questions you answered, your observations, and summary statistics
+#       2. snippets of code that created the plots
+#       3. links to the images of your plots
+
+# You can save images by using the ggsave() command.
+# ggsave() will save the last plot created.
+# For example...
+#                  qplot(x = price, data = diamonds)
+#                  ggsave('priceHistogram.png')
+
+# ggsave currently recognises the extensions eps/ps, tex (pictex),
+# pdf, jpeg, tiff, png, bmp, svg and wmf (windows only).
+
+# Copy and paste all of the code that you used for
+# your investigation, and submit it when you are ready.
+# ====================================================================================
+
+#The following command may be helpful for some of the Gapminder Data sets, 
+#once it's been converted to csv format: 
+#read.csv('data.csv', header = T, row.names = 1, check.names = F). 
+#You may want to look at additional function arguments in the help file for the read.table() 
+#family for additional tools that can help you read in data.
+
+#If you want to exchange the rows and columns of your dataframe, 
+#it will also be useful to know the transpose function, t().
+
+
+# CODE HERE
+
+#===========================================================================================
+# Your task is to investigate the distribution of your friends'
+# birth months and days.
+
+# Here some questions you could answer, and we hope you think of others.
+
+# **********************************************************************
+
+# How many people share your birthday? Do you know them?
+# (Reserve time with them or save money to buy them a gift!)
+
+# Which month contains the most number of birthdays?
+
+# How many birthdays are in each month?
+
+# Which day of the year has the most number of birthdays?
+
+# Do you have at least 365 friends that have birthdays on everyday
+# of the year?
+
+# **********************************************************************
+
+# You will need to do some data munging and additional research to
+# complete this task. This task won't be easy, and you may encounter some
+# unexpected challenges along the way. We hope you learn a lot from it though.
+
+# You can expect to spend 30 min or more on this task depending if you
+# use the provided data or obtain your personal data. We also encourage you
+# to use the lubridate package for working with dates. Read over the documentation
+# in RStudio and search for examples online if you need help.
+
+# You'll need to export your Facebooks friends' birthdays to a csv file.
+# You may need to create a calendar of your Facebook friends’ birthdays
+# in a program like Outlook or Gmail and then export the calendar as a
+# csv file.
+
+# Once you load the data into R Studio, you can use the strptime() function
+# to extract the birth months and birth days. We recommend looking up the
+# documentation for the function and finding examples online.
+
+# We've included some links in the Instructor Notes to help get you started.
+
+# Once you've completed your investigation, create a post in the discussions that includes:
+#       1. any questions you answered, your observations, and summary statistics
+#       2. snippets of code that created the plots
+#       3. links to the images of your plots
+
+# You can save images by using the ggsave() command.
+# ggsave() will save the last plot created.
+# For example...
+#                  qplot(x = price, data = diamonds)
+#                  ggsave('priceHistogram.png')
+
+# ggsave currently recognises the extensions eps/ps, tex (pictex),
+# pdf, jpeg, tiff, png, bmp, svg and wmf (windows only).
+
+# Copy and paste all of the code that you used for
+# your investigation below the line. Submit it when you are ready.
+# ===============================================================================
+
+# CODE HERE

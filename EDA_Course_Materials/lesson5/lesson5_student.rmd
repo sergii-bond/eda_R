@@ -15,6 +15,8 @@ Notes:
 Notes:
 
 ```{r Third Qualitative Variable}
+library(ggplot2)
+pf <- read.csv('../lesson3/pseudo_facebook.tsv', sep = '\t')
 ggplot(aes(x = gender, y = age),
        data = subset(pf, !is.na(gender))) + geom_boxplot() +
   stat_summary(fun.y = mean, geom = 'point', shape = 4)
@@ -226,7 +228,12 @@ Notes:
 Notes:
 
 ```{r Histograms Revisited}
-
+yo <- read.csv("yogurt.csv")
+str(yo)
+yo$id <- factor(yo$id)
+library(ggplot2)
+ggplot(aes(x = price), data = yo) +
+  geom_histogram()
 ```
 
 ***
@@ -235,7 +242,13 @@ Notes:
 Notes:
 
 ```{r Number of Purchases}
+unique(yo$price)
+length(unique(yo$price))
+table(yo$price)
 
+yo = transform(yo, all.purchases = strawberry + blueberry + pina.colada + plain + mixed.berry)
+ggplot(aes(x = all.purchases), data = yo) +
+  geom_histogram(binwidth = 1)
 ```
 
 ***
@@ -244,6 +257,8 @@ Notes:
 Notes:
 
 ```{r Prices over Time}
+ggplot(aes(x = time, y = price), data = yo) +
+  geom_jitter(alpha = 1/20)
 
 ```
 
@@ -257,7 +272,14 @@ Notes:
 ### Looking at Samples of Households
 
 ```{r Looking at Sample of Households}
+set.seed(4230)
+sample.ids = sample(levels(yo$id), 16)
 
+ggplot(aes(x = time, y = price), 
+       data = subset(yo, id %in% sample.ids)) +
+  facet_wrap( ~ id) + 
+  geom_line() +
+  geom_point(aes(size = all.purchases), pch = 1)
 ```
 
 ***
@@ -274,7 +296,18 @@ Notes:
 
 ### Scatterplot Matrix
 Notes:
+```r{}
+library(GGally)
+theme_set(theme_minimal(20))
+set.seed(1836)
+pf_subset <- pf[, c(2:15)]
+names(pf_subset)
+#ggpairs(pf_subset[sample.int(nrow(pf_subset), 1000), ])
 
+#You may also find that variable labels are on the outer edges of the scatterplot
+#matrix, rather than on the diagonal. If you want labels in the diagonal, you can set
+#the axisLabels = 'internal' argument in your ggpairs command.
+```
 ***
 
 ### Even More Variables
@@ -291,6 +324,7 @@ colnames(nci) <- c(1:64)
 ```
 
 ```{r}
+library(reshape2)
 nci.long.samp <- melt(as.matrix(nci[1:200,]))
 names(nci.long.samp) <- c("gene", "case", "value")
 head(nci.long.samp)
