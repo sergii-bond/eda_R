@@ -1,4 +1,4 @@
-TITLE by YOUR_NAME_HERE
+Red Wine Quality EDA by Sergii Bondariev
 ========================================================
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
@@ -14,27 +14,172 @@ library(ggplot2)
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
-
+df = read.csv("wineQualityReds.csv")
+str(df)
 ```
 
 # Univariate Plots Section
-```{r echo=FALSE, Univariate_Plots}
+Distribution of quality
 
+```{r echo=FALSE}
+ggplot(aes(x = quality), 
+       data = df) +
+  geom_histogram(bindidth = 1) +
+  scale_x_discrete()
+```
+
+The plot above confirms that, as described in the accompanying text file, the data is not balanced.
+There are many more normal wines, than poor or excelent ones.
+
+Distribution of 'fixed.acidity'
+
+```{r echo=FALSE}
+ggplot(aes(x = fixed.acidity), 
+       data = df) +
+  geom_histogram(binwidth = 0.1) +
+  scale_x_continuous(breaks = seq(floor(min(df$fixed.acidity)), max(df$fixed.acidity), 1) )
+summary(df$fixed.acidity)
+```
+
+Most of the wines have the fixed acidity in the interval (6, 11).
+
+Distribution of 'volatile.acidity'
+
+```{r echo=FALSE}
+ggplot(aes(x = volatile.acidity), 
+       data = df) +
+  geom_histogram(binwidth = 0.01) +
+  scale_x_continuous(breaks = seq(floor(min(df$volatile.acidity)), max(df$volatile.acidity), 0.1) )
+summary(df$volatile.acidity)
+```
+
+Most of the wines have the volatile acidity in the interval (0.2, 0.9).
+
+Distribution of citric acid
+
+```{r echo=FALSE}
+ggplot(aes(x = citric.acid), 
+       data = df) +
+  geom_histogram(binwidth = 0.01)
+summary(df$citric.acid)
+```
+
+A big number of wines do not have the citric acid. Most of the wines have the density of the citric acid below 0.5 g/dm^3. There is an outlier (or several outliers) with the citric acid density of 1 g/dm^3.
+
+Distribution of a residual sugar
+
+```{r echo=FALSE}
+ggplot(aes(x = residual.sugar), data = df) +
+  geom_histogram(binwidth = 0.2)
+
+summary(df$residual.sugar)
+
+```
+
+The distribution of a residual sugar resembles a normal distribution with a small variance, but with a long right tail. There is a number of outliers that make a tail even longer. 
+
+The distribution of chlorides
+
+```{r echo=FALSE}
+ggplot(aes(x = chlorides), data = df) +
+  geom_histogram(binwidth = 0.01)
+
+summary(df$chlorides)
+
+```
+
+Similar to a residual sugar.
+
+```{r echo=FALSE}
+str(df)
+
+```
+
+Distribution of free.sulfur.dioxide
+
+```{r echo=FALSE}
+ggplot(aes(x = free.sulfur.dioxide), data = df) +
+  geom_histogram(binwidth = 1)
+
+summary(df$free.sulfur.dioxide)
+```
+
+Distribution of total.sulfur.dioxide
+
+```{r echo=FALSE}
+ggplot(aes(x = total.sulfur.dioxide), data = df) +
+  geom_histogram(binwidth = 1)
+
+summary(df$total.sulfur.dioxide)
+```
+
+Distribution of (total.sulfur.dioxide - free.sulfur.dioxide)
+
+```{r echo=FALSE}
+ggplot(aes(x = total.sulfur.dioxide - free.sulfur.dioxide), data = df) +
+  geom_histogram(binwidth = 1)
+
+```
+
+Distribution of density
+
+```{r echo=FALSE}
+ggplot(aes(x = density), data = df) +
+  geom_histogram(binwidth = 0.0002)
+
+summary(df$density)
+```
+
+Resembles a normal distribution
+
+Distribution of density
+
+```{r echo=FALSE}
+ggplot(aes(x = pH), data = df) +
+  geom_histogram(binwidth = 0.02)
+
+summary(df$pH)
+```
+
+Resembles a normal distribution. All wines are acidic with pH between 2.7 and 4.01.
+
+Distribution of sulphates
+
+```{r echo=FALSE}
+ggplot(aes(x = sulphates), data = df) +
+  geom_histogram(binwidth = 0.02)
+
+summary(df$sulphates)
+```
+
+Skewed normal distribution with a long right tail and outliers.
+
+Distribution of alcohol
+
+```{r echo=FALSE}
+ggplot(aes(x = alcohol), data = df) +
+  geom_histogram(binwidth = 0.2)
+
+summary(df$alcohol)
 ```
 
 # Univariate Analysis
 
 ### What is the structure of your dataset?
+The red wine dataset consists of 1599 observations and 13 variables. 
 
 ### What is/are the main feature(s) of interest in your dataset?
+'quality' is the main feature, because it is a dependent variable used in training and evaluating the model, if we are interested in wine quality predictions.
 
 ### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+At this point there is no evidence to discard any of the features, except an identifier 'X'. There is a thought that free.sulfur.dioxide and total.sulfur.dioxide could be highly correlated, because total contents of SO2 includes free SO2. That said, free.sulfur.dioxide could be neglected in the future. However this analysis will be done in the next section. 
 
 ### Did you create any new variables from existing variables in the dataset?
+One variable was created along the way, (total.sulfur.dioxide - free.sulful.dioxide), to see the distribution of the bound sulfur dioxide.
 
 ### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
 
-
+One unusual distribution was noticed for 'citric.acid' feature. So far no change of the form of the data was performed.
 
 # Bivariate Plots Section
 ```{r echo=FALSE, Bivariate_Plots}
