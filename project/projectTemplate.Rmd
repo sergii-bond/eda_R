@@ -344,8 +344,14 @@ ggplot(aes(x = sulphates, y = citric.acid, color = quality), data = df) +
 
 
 ```{r echo=FALSE}
-ggplot(aes(x = sulphates, y = quality), data = df) +
-  geom_point() 
+df$alcohol.cut = cut(df$alcohol, c(min(df$alcohol), 10, 11, 12, max(df$alcohol)))
+table(df$alcohol.cut)
+#table(df$quality, df$alcohol.cut)
+ggplot(aes(x = quality, y = sulphates), data = df) +
+  geom_boxplot(aes(fill = alcohol.cut)) +
+  scale_fill_brewer(type = 'qual',
+    guide = guide_legend(title = 'Alcohol Level', reverse = T,
+    override.aes = list(alpha = 1, size = 1))) 
 
 ```
 
