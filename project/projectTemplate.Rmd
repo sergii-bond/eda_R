@@ -10,12 +10,15 @@ Red Wine Quality EDA by Sergii Bondariev
 # You should set echo=FALSE for all code chunks in your file.
 
 library(ggplot2)
+library(GGally)
 ```
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
 df = read.csv("wineQualityReds.csv")
 str(df)
+df$quality = factor(df$quality)
+df$X = NULL
 ```
 
 # Univariate Plots Section
@@ -90,11 +93,6 @@ summary(df$chlorides)
 
 Similar to a residual sugar.
 
-```{r echo=FALSE}
-str(df)
-
-```
-
 Distribution of free.sulfur.dioxide
 
 ```{r echo=FALSE}
@@ -166,13 +164,14 @@ summary(df$alcohol)
 # Univariate Analysis
 
 ### What is the structure of your dataset?
-The red wine dataset consists of 1599 observations and 13 variables. 
+The red wine dataset consists of 1599 observations and 13 variables.
+The quality was converted to a factor variable.
 
 ### What is/are the main feature(s) of interest in your dataset?
 'quality' is the main feature, because it is a dependent variable used in training and evaluating the model, if we are interested in wine quality predictions.
 
 ### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
-At this point there is no evidence to discard any of the features, except an identifier 'X'. There is a thought that free.sulfur.dioxide and total.sulfur.dioxide could be highly correlated, because total contents of SO2 includes free SO2. That said, free.sulfur.dioxide could be neglected in the future. However this analysis will be done in the next section. 
+At this point there is no evidence to discard any of the features, except an identifier 'X'. There is a thought that free.sulfur.dioxide and total.sulfur.dioxide could be highly correlated, because total contents of SO2 includes free SO2. That said, total.sulfur.dioxide could be neglected in the future and replaced by (total.sulfur.dioxide - free.sulfur.dioxide). However this analysis will be done in the next section. 
 
 ### Did you create any new variables from existing variables in the dataset?
 One variable was created along the way, (total.sulfur.dioxide - free.sulful.dioxide), to see the distribution of the bound sulfur dioxide.
@@ -182,24 +181,171 @@ One variable was created along the way, (total.sulfur.dioxide - free.sulful.diox
 One unusual distribution was noticed for 'citric.acid' feature. So far no change of the form of the data was performed.
 
 # Bivariate Plots Section
-```{r echo=FALSE, Bivariate_Plots}
 
+Scatterplot between free.sulfur.dioxide and total.sulfur.dioxide
+
+```{r echo=FALSE, Bivariate_Plots}
+ggplot(aes(x = free.sulfur.dioxide, y = total.sulfur.dioxide), data = df) +
+  geom_point(alpha = 1/4)
+
+with(df, cor.test(free.sulfur.dioxide, total.sulfur.dioxide))
+```
+
+We see here some correlation. It is implicitly written in the text file that free.sulfur.dioxide is included into the total.sulfur.dioxide. Let's create a new variable, bond.sulfur.dioxide = total.sulfur.dioxide - free.sulfur.dioxide. 
+
+```{r echo=FALSE}
+df$bound.sulfur.dioxide <- df$total.sulfur.dioxide - df$free.sulfur.dioxide
+ggplot(aes(x = free.sulfur.dioxide, y = bound.sulfur.dioxide), data = df) +
+  geom_point(alpha = 1/4)
+
+with(df, cor.test(free.sulfur.dioxide, bound.sulfur.dioxide))
+df$total.sulfur.dioxide = NULL
+```
+
+We can see this relationship has a similar shape, but a smaller correlation. In case of modeling it is better to use free.sulfur.dioxide and bound.sulfur.dioxide in place of total.sulfur.dioxide.
+
+Lets plot a matrix on a sample of 500 points
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 10, fig.height = 10}
+df.sample <- df[sample(1:length(df$quality), 500), -which(names(df) == c('X'))]
+ggpairs(df, axisLabels = 'internal')
+
+```
+
+The matrix reveals some interesting relationships, for example, the ones with correlation higher than 0.5. Such cases will be examined next.
+
+pH vs. Citric Acid
+
+```{r echo=FALSE}
+ggplot(aes(x = citric.acid, y = pH), data = df) +
+  geom_point(alpha = 1/4) +
+  #geom_line(stat = 'summary', fun.y = 'mean', color = 'blue', size = 2)
+  geom_smooth(method = 'lm')
+
+with(df, cor.test(pH, citric.acid))
+```
+
+pH vs. Fixed Acidity
+
+```{r echo=FALSE}
+ggplot(aes(x = fixed.acidity, y = pH), data = df) +
+  geom_point(alpha = 1/4) +
+  geom_smooth(method = 'lm')
+
+with(df, cor.test(pH, fixed.acidity))
+```
+
+It is logical to see that pH decreases as citric acidity or fixed acidity increase.
+
+Density vs. Fixed Acidity
+
+```{r echo=FALSE}
+ggplot(aes(x = fixed.acidity, y = density), data = df) +
+  geom_point(alpha = 1/4) +
+  #geom_line(stat = 'summary', fun.y = 'mean', color = 'green', size = 2)
+  geom_smooth(method = 'lm')
+
+with(df, cor.test(fixed.acidity, density))
+```
+
+We see a positive correlation here. 
+
+
+Density vs. Chlorides
+```{r echo=FALSE}
+ggplot(aes(x = chlorides, y = density), data = df) +
+  geom_point(alpha = 1/4) 
+
+ggplot(aes(x = chlorides, y = density), data = df) +
+  scale_x_continuous(limits = c(0, quantile(df$chlorides, 0.95)) ) +
+  geom_point(alpha = 1/4) +
+  #geom_line(stat = 'summary', fun.y = 'mean', color = 'orange', size = 2)
+  geom_smooth(method = 'lm')
+
+#with(df, cor.test(chlorides, density))
+```
+
+Density vs. Residual Sugar
+```{r echo=FALSE}
+ggplot(aes(x = residual.sugar, y = density), data = df) +
+  geom_point(alpha = 1/4) 
+
+#exclude top 5% of residual.sugar
+ggplot(aes(x = residual.sugar, y = density), data = df) +
+  scale_x_continuous(limits = c(0, quantile(df$residual.sugar, 0.95)) ) +
+  geom_point(alpha = 1/4) +
+  geom_smooth(method = 'lm')
+
+```
+
+Density vs. Alcohol
+```{r echo=FALSE}
+ggplot(aes(x = alcohol, y = density), data = df) +
+  geom_point(alpha = 1/4) +
+  geom_smooth(method = 'lm')
+
+```
+
+Chlorides and residual sugars both add to density, which is logical, because they are soluble in water. Wines with a higher alcohol level tend to have smaller density.
+
+Boxplot of features per quality rating:
+
+```{r echo=FALSE}
+
+for (feature in names(df)) {
+  if (feature != 'quality') {
+    print(ggplot(aes_string(x = 'quality', y = feature), data = df) +
+      geom_boxplot())
+  }
+}
 ```
 
 # Bivariate Analysis
 
 ### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
 
+- The quality of wine decreases as volatile acidity increases.
+- Wines with higher levels of citric acid tend to be of higher quality.
+- The quality looks uncorrelated with a residual sugar and chlorides.
+- Smaller density wines have better quality.
+- Smaller pH level wines have better quality.
+- The more sulphates the wine has, the higher is its quality.
+- Wines with a higher percentage of alcohol tend to be of higher quality.
+
 ### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+- It is logical to see that pH decreases as citric acidity or fixed acidity increase. We can exclude pH level from predictors of quality.
+- Chlorides and residual sugars both add to density, which is natural, because they are soluble in water. Wines with a higher alcohol level tend to have smaller density. Based on these observations and two premises in the section above, "Smaller density wines have better quality" and "Wines with a higher percentage of alcohol tend to be of higher quality", we can conclude that density can be excluded from the predictors for wine quality.
 
 ### What was the strongest relationship you found?
-
+- free SO2 and total SO2 are highly correlated, because total SO2 includes free SO2.
 
 
 
 # Multivariate Plots Section
 
-```{r echo=FALSE, Multivariate_Plots}
+Volatile Acidity vs. Fixed Acidity by Quality
+
+```{r echo=FALSE}
+ggplot(aes(x = fixed.acidity, y = volatile.acidity, color = quality), data = df) +
+  geom_point() +
+  scale_color_brewer(type = 'div',
+    guide = guide_legend(title = 'Quality', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) 
+```
+
+Sulphates vs. Citric Acid by Quality
+
+```{r echo=FALSE}
+ggplot(aes(x = sulphates, y = citric.acid, color = quality), data = df) +
+  geom_point() +
+  scale_color_brewer(type = 'qual',
+    guide = guide_legend(title = 'Quality', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) 
+```
+
+
+```{r echo=FALSE}
+ggplot(aes(x = sulphates, y = quality), data = df) +
+  geom_point() 
 
 ```
 
