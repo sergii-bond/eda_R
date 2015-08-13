@@ -1,5 +1,0 @@
-#install.packages("devtools")
-#install.packages("curl")
-#install.packages("xml2")
-#devtools::install_github("rstudio/EDAWR")
-#library(EDAWR)
