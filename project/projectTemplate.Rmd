@@ -27,7 +27,7 @@ Distribution of quality
 ```{r echo=FALSE}
 ggplot(aes(x = quality), 
        data = df) +
-  geom_histogram(bindidth = 1) +
+  geom_histogram() +
   scale_x_discrete()
 ```
 
@@ -234,7 +234,50 @@ ggplot(aes(x = fixed.acidity, y = pH), data = df) +
 with(df, cor.test(pH, fixed.acidity))
 ```
 
+pH vs. Volatile Acidity
+
+```{r echo=FALSE}
+ggplot(aes(x = volatile.acidity, y = pH), data = df) +
+  geom_point(alpha = 1/4) +
+  geom_smooth(method = 'lm')
+
+with(df, cor.test(pH, volatile.acidity))
+```
+
 It is logical to see that pH decreases as citric acidity or fixed acidity increase.
+Also, it is likely that citric acidity is a part of a fixed acidity. Let's check this.
+
+```{r echo=FALSE}
+ggplot(aes(x = citric.acid, y = fixed.acidity), data = df) +
+  geom_point(alpha = 1/4) +
+  geom_smooth(method = 'lm')
+
+with(df, cor.test(citric.acid, fixed.acidity))
+```
+
+We can see the high correlation here.
+Let's verify the correlation between citric.acid and other acids in the fixed.acidity.
+
+```{r echo=FALSE}
+ggplot(aes(x = citric.acid, y = fixed.acidity - citric.acid), data = df) +
+  geom_point(alpha = 1/4) +
+  geom_smooth(method = 'lm')
+with(df, cor.test(citric.acid, fixed.acidity - citric.acid))
+```
+
+We can see that correlation is only little but lower. It suggests that the wines with higher levels of citric acid will also have higher levels of other fixed acids.
+
+We can also check if volatile acidity is correlated with a fixed acidity.
+
+```{r echo=FALSE}
+ggplot(aes(x = volatile.acidity, y = fixed.acidity), data = df) +
+  geom_point(alpha = 1/4) +
+  geom_smooth(method = 'lm')
+
+with(df, cor.test(volatile.acidity, fixed.acidity))
+```
+
+As we can see, the correlation is very small.
 
 Density vs. Fixed Acidity
 
@@ -287,6 +330,15 @@ ggplot(aes(x = alcohol, y = density), data = df) +
 
 Chlorides and residual sugars both add to density, which is logical, because they are soluble in water. Wines with a higher alcohol level tend to have smaller density.
 
+
+```{r echo=FALSE}
+#Sulphates vs. Total sulphur dioxide
+#ggplot(aes(x = sulphates, y = total.sulfur.dioxide), data = df) +
+#  geom_point(alpha = 1/4) +
+#  geom_smooth(method = 'lm')
+
+```
+
 Boxplot of features per quality rating:
 
 ```{r echo=FALSE}
@@ -312,46 +364,117 @@ for (feature in names(df)) {
 - Wines with a higher percentage of alcohol tend to be of higher quality.
 
 ### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
-- It is logical to see that pH decreases as citric acidity or fixed acidity increase. We can exclude pH level from predictors of quality.
-- Chlorides and residual sugars both add to density, which is natural, because they are soluble in water. Wines with a higher alcohol level tend to have smaller density. Based on these observations and two premises in the section above, "Smaller density wines have better quality" and "Wines with a higher percentage of alcohol tend to be of higher quality", we can conclude that density can be excluded from the predictors for wine quality.
+- It is logical to see that pH decreases as citric acidity or fixed acidity increase. In addition, the analysis shows that a citric acidity can be thought as a component of a fixed acidity. We can try to exclude pH level from the predictors of wine quality. 
+- Chlorides and residual sugars both add to density, which is natural, because they are soluble in water. 
+- Wines with a higher alcohol level tend to have smaller density. Based on this observation and two premises in the section above, "Smaller density wines have better quality" and "Wines with a higher percentage of alcohol tend to be of higher quality", we can conclude that density can be excluded from the main predictors of wine quality.
 
 ### What was the strongest relationship you found?
 - free SO2 and total SO2 are highly correlated, because total SO2 includes free SO2.
+- citric acid and fixed acidity are highly correlated too, for the same reason.
 
 
 
 # Multivariate Plots Section
 
-Volatile Acidity vs. Fixed Acidity by Quality
 
 ```{r echo=FALSE}
-ggplot(aes(x = fixed.acidity, y = volatile.acidity, color = quality), data = df) +
-  geom_point() +
-  scale_color_brewer(type = 'div',
-    guide = guide_legend(title = 'Quality', reverse = T,
-    override.aes = list(alpha = 1, size = 2))) 
+#Volatile Acidity vs. Fixed Acidity by Quality
+#ggplot(aes(x = fixed.acidity, y = volatile.acidity, color = quality), data = df) +
+#  geom_point() +
+#  scale_color_brewer(type = 'div',
+#    guide = guide_legend(title = 'Quality', reverse = T,
+#    override.aes = list(alpha = 1, size = 2))) 
 ```
 
-Sulphates vs. Citric Acid by Quality
-
 ```{r echo=FALSE}
-ggplot(aes(x = sulphates, y = citric.acid, color = quality), data = df) +
-  geom_point() +
-  scale_color_brewer(type = 'qual',
-    guide = guide_legend(title = 'Quality', reverse = T,
-    override.aes = list(alpha = 1, size = 2))) 
+df$alcohol.cut = cut(df$alcohol, c(min(df$alcohol) - 0.1, 10, 11, 12, max(df$alcohol)))
+#table(df$alcohol.cut)
+##table(df$quality, df$alcohol.cut)
+#ggplot(aes(x = quality, y = sulphates), data = df) +
+#  geom_boxplot(aes(fill = alcohol.cut)) +
+#  scale_fill_brewer(type = 'qual',
+#    guide = guide_legend(title = 'Alcohol Level', reverse = T,
+#    override.aes = list(alpha = 1, size = 1))) 
+#
 ```
 
-
 ```{r echo=FALSE}
-df$alcohol.cut = cut(df$alcohol, c(min(df$alcohol), 10, 11, 12, max(df$alcohol)))
-table(df$alcohol.cut)
-#table(df$quality, df$alcohol.cut)
-ggplot(aes(x = quality, y = sulphates), data = df) +
-  geom_boxplot(aes(fill = alcohol.cut)) +
+df$citric.acid.cut = cut(df$citric.acid, c(-0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1))
+df$sulphates.cut = cut(df$sulphates, c(min(df$sulphates) - 0.1, 0.5, 0.6, 0.7, 0.8, 2))
+#table(df$sulphates.cut)
+#df$volatile.acidity.cut = cut(df$volatile.acidity, c(seq(0, 1, 0.1), 1.6))
+#df$pH.cut = cut(df$pH, c(0, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4))
+
+df1 = subset(df, quality %in% c(4, 5, 6, 7))
+
+ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
+  geom_boxplot() +
+  facet_wrap(~ citric.acid.cut) +
+  ggtitle('Volatile Acidity vs. Quality by Citric Acid level')
+  
+ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
+  geom_boxplot(aes(fill = citric.acid.cut)) +
+  #facet_wrap(~ citric.acid.cut) +
   scale_fill_brewer(type = 'qual',
-    guide = guide_legend(title = 'Alcohol Level', reverse = T,
-    override.aes = list(alpha = 1, size = 1))) 
+    guide = guide_legend(title = 'Citric Acid', reverse = T,
+    override.aes = list(alpha = 1, size = 0.5))) +
+  ggtitle('Volatile Acidity vs. Quality by Citric Acid level')
+```
+
+```{r echo=FALSE}
+ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
+  geom_boxplot() +
+  facet_wrap(~ alcohol.cut, ncol = 4) +
+  coord_cartesian(ylim = c(0.2, 1.2)) + 
+  ggtitle('Volatile Acidity vs. Quality by Alcohol level')
+  
+ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
+  geom_boxplot(aes(fill = alcohol.cut)) +
+  coord_cartesian(ylim = c(0.2, 1.2)) +
+  scale_fill_brewer(type = 'qual',
+    guide = guide_legend(title = 'Alcohol', reverse = T,
+    override.aes = list(alpha = 1, size = 0.5))) +
+  ggtitle('Volatile Acidity vs. Quality by Alcohol level')
+```
+
+```{r echo=FALSE}
+```
+  
+```{r echo=FALSE}
+ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0.2, 1.2)) +
+  facet_wrap(~ sulphates.cut, ncol = 5) +
+  ggtitle('Volatile Acidity vs. Quality by Sulphates')
+```
+  
+```{r echo=FALSE}
+ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
+  geom_boxplot(aes(fill = sulphates.cut)) +
+  coord_cartesian(ylim = c(0.2, 1.2)) +
+  scale_fill_brewer(type = 'qual',
+    guide = guide_legend(title = 'Sulphates', reverse = T,
+    override.aes = list(alpha = 1, size = 0.5))) +
+  ggtitle('Volatile Acidity vs. Quality by Sulphates')
+```
+
+```{r echo=FALSE}
+ggplot(aes(x = alcohol.cut, y = volatile.acidity), data = df1) +
+  geom_boxplot(aes(fill = sulphates.cut)) +
+  coord_cartesian(ylim = c(0.2, 1.2)) +
+  scale_fill_brewer(type = 'qual',
+    guide = guide_legend(title = 'Sulphates', reverse = T,
+    override.aes = list(alpha = 1, size = 0.5))) +
+  ggtitle('Volatile Acidity vs. Alcohol Level by Sulphates')
+```
+
+```{r echo=FALSE}
+
+#library(rgl)
+#plot3d(df$fixed.acidity, df$citric.acid, df$pH)
+
+#library(Rcmdr)
+#scatter3d(df$fixed.acidity, df$citric.acid, df$pH)
 
 ```
 
@@ -359,9 +482,21 @@ ggplot(aes(x = quality, y = sulphates), data = df) +
 
 ### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
 
+Most of the analysis was dedicated to studying the dependency of wine quality on other features in the dataset.
+The analysis shows the following:
+- Given a citric acid level, the wine quality increases as volatile acidity decreases
+- For the same quality level, wines with higher contents of the citric acid appear to have a smaller volatile acidity
+- Given alcohol level, the wine quality increases as volatile acidity decreases
+- For the same quality level, wines with higher contents of the alcohol appear to have a smaller volatile acidity
+- Given sulphates level, the wine quality increases as volatile acidity decreases
+- For the same quality level, wines with higher contents of the sulphates appear to have a smaller volatile acidity
+
+
 ### Were there any interesting or surprising interactions between features?
+- for the given alcohol level, wines with higher levels of sulphates tend to have smaller volatile acidity 
 
 ### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+The models were not created.
 
 ------
 
@@ -369,27 +504,69 @@ ggplot(aes(x = quality, y = sulphates), data = df) +
 
 ### Plot One
 ```{r echo=FALSE, Plot_One}
+ggplot(aes(x = fixed.acidity, y = density), data = df) +
+  geom_point(alpha = 1/4) +
+  geom_smooth(method = 'lm', color = 'red') +
+  ggtitle('Wine density vs. Fixed acidity') +
+  xlab('Fixed Acidity, g / dm^3') +
+  ylab('Density, g / cm^3')
 
 ```
 
 ### Description One
 
+In the plot above we observe a positive correlation between density and a fixed acidity.
+ The similar relashionship is found for 'density vs. sugars' and 'density vs. chlorides'. While almost everybody knows that sugar and salt are soluble in water and therefore would add to density, not everyone knows that wines with higher fixed acidity tend to have a higher density. 
 
 ### Plot Two
 ```{r echo=FALSE, Plot_Two}
+ggplot(aes(x = quality, y = citric.acid), data = df) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(-0.05, 0.75)) +
+  ggtitle('Quality vs. Citric acid levels') +
+  xlab('Quality score') +
+  ylab('Citric acid, g / dm^3')
 
 ```
 
 ### Description Two
-
+As we can see on the plot above, the higher citric acid level in the wine improves its quality. The results coincide with the opinion, that citric acid can add 'freshness' and flavor to wines.
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
+ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
+  geom_boxplot(aes(fill = sulphates.cut)) +
+  coord_cartesian(ylim = c(0.2, 1)) +
+  scale_fill_brewer(type = 'qual',
+    guide = guide_legend(title = 'Sulphates, g / dm^3', reverse = T,
+    override.aes = list(alpha = 1, size = 0.5))) +
+  ggtitle('Volatile Acidity vs. Quality by level of Sulphates') +
+  xlab('Quality score') +
+  ylab('Volatile acidity, g / dm^3')
 
 ```
 
 ### Description Three
+Volatile acidity is the amount of acetic acid in wine, which at too high of levels can lead to an unpleasant, vinegar taste. Sulphates is a wine additive which can contribute to sulfur dioxide gas (S02) levels, wich acts as an antimicrobial and antioxidant.
+
+The analysis of the plot above reveals that given sulphates level, the wine quality increases as volatile acidity decreases. This agrees with the description of volatile acidity. However we can also notice that for the same quality level, wines with higher contents of the sulphates appear to have a smaller volatile acidity. It leaves the spot for discussion to figure out what stays behind this interesting dependency. 
 
 ------
 
 # Reflection
+The goal of the exploratory data analysis of the red wine dataset was to determine the relashionship between existing variables, especially between 'Quality' and the rest of variables, communicate the findings to a reader and to prepare for the machine learning step. 
+
+In the first section, the univariate analysis was done to see and understand the distributions of every variable in the dataset. In particular it was detected that the data is not balanced and most of the quality scores are in the middle. This fact helped to read the plots in subsequent sections with deeper understanding. 
+
+The second section described the process and the results of a bivariate analysis. Here it was shown that some of the variables, besides 'Quality', are not independent, which is often an assumtion in machine learning models. Additionally some dependencies of 'Quality' on other variables were found, some of which seemed to be linear, while some other could be approximated by a higher order polynomial. The bivariate analysis helped to prepare for the multivariate analysis by selecting the variables to analyse further.
+
+In the course of Multivariate analysis the goal was to explain the variance of variables as a function of Quality using another variable(s). The boxplot was chosen as a base, and the 'third' dimension was introduced via new factor variables, that were created by cutting the range of existing into adjacent groups. Multivariate analysis helped to find dependencies, some of which can be explained by the writer, while others are not so easily explicable. 
+
+The difficulties in the analysis were on an interpretation side because of the lack of the chemistry expertise. There is a great suspicion that there are dependencies between variables which are left uncovered in this analysis. While some of the unexplained relationships found can appear to be easily explained by a chemist.
+
+Still some success was achieved to reveal existing relationships between features. This would help in the subsequent machine learning step, if one is undertaken in order to predict a wine qualitiy. More importantly for the author, it has strengthened the ways to explore various kinds of data using a varienty of application packages suitable for the task.
+
+The analysis of wines dataset shouldn't stop with the analysis presented in this article. One of the areas to improve is to get more data observations and more variables, such as vintage year, weather,  price, etc. The dataset analysed is very small and there are many other possible variables out there. It is also necessary to understand better the setting under which the wines were evaluated by exprets. This can help to see whether any biases into the data could potentially be introduced. To get more understanding of the data, the machine learning algorithms could be used. If the goal is not only to make predictions, but to understand data as well, not all methods can be appropriate. For example, tree based methods can be used to show dependencies in data, while random forests, for example, may not be appropriate, because the results are hard to explain. 
+
+Thank you,
+Sergii Bondariev
