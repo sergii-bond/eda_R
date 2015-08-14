@@ -1,6 +1,12 @@
 Red Wine Quality EDA by Sergii Bondariev
 ========================================================
 
+```{r global_options, include=FALSE}
+#suppress the warnings and other messages from showing in the knitted file.
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      echo=FALSE, warning=FALSE, message=FALSE)
+```
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 # Load all of the packages that you end up using
 # in your analysis in this code chunk.
@@ -17,7 +23,9 @@ library(GGally)
 # Load the Data
 df = read.csv("wineQualityReds.csv")
 str(df)
+# Convert quality variable to a factor
 df$quality = factor(df$quality)
+# Remove the index variable
 df$X = NULL
 ```
 
@@ -25,6 +33,7 @@ df$X = NULL
 Distribution of quality
 
 ```{r echo=FALSE}
+# Plot a histogram of quality
 ggplot(aes(x = quality), 
        data = df) +
   geom_histogram() +
@@ -37,6 +46,7 @@ There are many more normal wines, than poor or excelent ones.
 Distribution of 'fixed.acidity'
 
 ```{r echo=FALSE}
+# Plot the histogram of a fixed acidity with custom bindiwdth and X axis breaks
 ggplot(aes(x = fixed.acidity), 
        data = df) +
   geom_histogram(binwidth = 0.1) +
@@ -49,6 +59,7 @@ Most of the wines have the fixed acidity in the interval (6, 11).
 Distribution of 'volatile.acidity'
 
 ```{r echo=FALSE}
+# Plot the histogram of a volatile acidity with custom bindiwdth and X axis breaks
 ggplot(aes(x = volatile.acidity), 
        data = df) +
   geom_histogram(binwidth = 0.01) +
@@ -61,6 +72,7 @@ Most of the wines have the volatile acidity in the interval (0.2, 0.9).
 Distribution of citric acid
 
 ```{r echo=FALSE}
+# Plot the histogram of the citric acid
 ggplot(aes(x = citric.acid), 
        data = df) +
   geom_histogram(binwidth = 0.01)
@@ -72,6 +84,7 @@ A big number of wines do not have the citric acid. Most of the wines have the de
 Distribution of a residual sugar
 
 ```{r echo=FALSE}
+# Plot a histogram of a residual sugar with a custom binwidth
 ggplot(aes(x = residual.sugar), data = df) +
   geom_histogram(binwidth = 0.2)
 
@@ -84,6 +97,7 @@ The distribution of a residual sugar resembles a normal distribution with a smal
 The distribution of chlorides
 
 ```{r echo=FALSE}
+# Plot a histogram of chlorides with a custom binwidth
 ggplot(aes(x = chlorides), data = df) +
   geom_histogram(binwidth = 0.01)
 
@@ -96,6 +110,7 @@ Similar to a residual sugar.
 Distribution of free.sulfur.dioxide
 
 ```{r echo=FALSE}
+# Plot a histogram of a free sulfur dioxide, uses custom binwidth
 ggplot(aes(x = free.sulfur.dioxide), data = df) +
   geom_histogram(binwidth = 1)
 
@@ -105,6 +120,7 @@ summary(df$free.sulfur.dioxide)
 Distribution of total.sulfur.dioxide
 
 ```{r echo=FALSE}
+# Plot a histogram of a total sulfur dioxide, uses custom binwidth
 ggplot(aes(x = total.sulfur.dioxide), data = df) +
   geom_histogram(binwidth = 1)
 
@@ -114,6 +130,7 @@ summary(df$total.sulfur.dioxide)
 Distribution of (total.sulfur.dioxide - free.sulfur.dioxide)
 
 ```{r echo=FALSE}
+# Plot a histogram of a difference between total SO2 and free SO2
 ggplot(aes(x = total.sulfur.dioxide - free.sulfur.dioxide), data = df) +
   geom_histogram(binwidth = 1)
 
@@ -122,6 +139,7 @@ ggplot(aes(x = total.sulfur.dioxide - free.sulfur.dioxide), data = df) +
 Distribution of density
 
 ```{r echo=FALSE}
+# Plot a histogram of density using a custom binwidth
 ggplot(aes(x = density), data = df) +
   geom_histogram(binwidth = 0.0002)
 
@@ -130,9 +148,10 @@ summary(df$density)
 
 Resembles a normal distribution
 
-Distribution of density
+Distribution of pH
 
 ```{r echo=FALSE}
+# Plot a histogram of pH with a custom bindwidth
 ggplot(aes(x = pH), data = df) +
   geom_histogram(binwidth = 0.02)
 
@@ -144,6 +163,7 @@ Resembles a normal distribution. All wines are acidic with pH between 2.7 and 4.
 Distribution of sulphates
 
 ```{r echo=FALSE}
+# Plot a histogram of sulphates with a custom binwidth
 ggplot(aes(x = sulphates), data = df) +
   geom_histogram(binwidth = 0.02)
 
@@ -155,6 +175,7 @@ Skewed normal distribution with a long right tail and outliers.
 Distribution of alcohol
 
 ```{r echo=FALSE}
+# Plot the histogram of an alcohol with a custom binwidth
 ggplot(aes(x = alcohol), data = df) +
   geom_histogram(binwidth = 0.2)
 
@@ -182,23 +203,30 @@ One unusual distribution was noticed for 'citric.acid' feature. So far no change
 
 # Bivariate Plots Section
 
-Scatterplot between free.sulfur.dioxide and total.sulfur.dioxide
+Variables free.sulfur.dioxide and total.sulfur.dioxide represent the same chemical component. It is likely to see the dependency between them. Let's make a scatterplot.
 
 ```{r echo=FALSE, Bivariate_Plots}
+# Plot a scatterplot of free SO2 vs. total SO2
 ggplot(aes(x = free.sulfur.dioxide, y = total.sulfur.dioxide), data = df) +
   geom_point(alpha = 1/4)
 
+# Find a correlation between them
 with(df, cor.test(free.sulfur.dioxide, total.sulfur.dioxide))
 ```
 
-We see here some correlation. It is implicitly written in the text file that free.sulfur.dioxide is included into the total.sulfur.dioxide. Let's create a new variable, bond.sulfur.dioxide = total.sulfur.dioxide - free.sulfur.dioxide. 
+We see here some correlation. It is implicitly written in the text file that free.sulfur.dioxide is included into the total.sulfur.dioxide. Let's create a new variable, bound.sulfur.dioxide = total.sulfur.dioxide - free.sulfur.dioxide. The goal is to make two variables less dependent. Then we make a scatterplot again and compare it to the previous scatterplot.
 
 ```{r echo=FALSE}
+# Create a new variable as a difference between total SO2 and free SO2
 df$bound.sulfur.dioxide <- df$total.sulfur.dioxide - df$free.sulfur.dioxide
+# Make a scatterplot between free and bound SO2
 ggplot(aes(x = free.sulfur.dioxide, y = bound.sulfur.dioxide), data = df) +
   geom_point(alpha = 1/4)
 
+# Find their correlation
 with(df, cor.test(free.sulfur.dioxide, bound.sulfur.dioxide))
+
+# Total SO2 is no longer needed
 df$total.sulfur.dioxide = NULL
 ```
 
@@ -206,113 +234,153 @@ We can see this relationship has a similar shape, but a smaller correlation. In 
 
 Lets plot a matrix on a sample of 500 points
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 10, fig.height = 10}
+# Sample data to prepare if for the scatterplot matrix
 df.sample <- df[sample(1:length(df$quality), 500), -which(names(df) == c('X'))]
+
+# Create a scatterplot matrix
 ggpairs(df, axisLabels = 'internal')
 
 ```
 
 The matrix reveals some interesting relationships, for example, the ones with correlation higher than 0.5. Such cases will be examined next.
 
+First, let's check the dependency of pH of different kinds of acid, because as we know from chemistry, acidity results in a change of pH. The question is, can we exclude pH from the future analysis, treating it as a dependent variable ?
+
 pH vs. Citric Acid
 
 ```{r echo=FALSE}
+# Make a scatterplot between pH and a citric acid, fit a line
 ggplot(aes(x = citric.acid, y = pH), data = df) +
   geom_point(alpha = 1/4) +
-  #geom_line(stat = 'summary', fun.y = 'mean', color = 'blue', size = 2)
   geom_smooth(method = 'lm')
 
+# Calculate the correlation coefficient
 with(df, cor.test(pH, citric.acid))
 ```
+
+We can clearly see the correlation as expected. More acid means smaller pH.
 
 pH vs. Fixed Acidity
 
 ```{r echo=FALSE}
+# Make a scatterplot between pH and a fixed acidity, fit a line
 ggplot(aes(x = fixed.acidity, y = pH), data = df) +
   geom_point(alpha = 1/4) +
   geom_smooth(method = 'lm')
 
+# Calculate the correlation coefficient
 with(df, cor.test(pH, fixed.acidity))
 ```
+
+We can clearly see the correlation as expected. Again, more acid means smaller pH.
 
 pH vs. Volatile Acidity
 
 ```{r echo=FALSE}
+# Make a scatterplot between pH and a volatile acidity, fit a line
 ggplot(aes(x = volatile.acidity, y = pH), data = df) +
   geom_point(alpha = 1/4) +
   geom_smooth(method = 'lm')
 
+# Calculate the correlation coefficient
 with(df, cor.test(pH, volatile.acidity))
 ```
 
-It is logical to see that pH decreases as citric acidity or fixed acidity increase.
+However with volatile acidity, the picture is not the same. The correlation is small and with a different sign.
+
+As a conclusion about pH, it is logical to see that pH decreases as citric acidity or fixed acidity increase.
+
 Also, it is likely that citric acidity is a part of a fixed acidity. Let's check this.
 
 ```{r echo=FALSE}
+# Make a scatterplot between citric acid and fixed acidity, fit a line
 ggplot(aes(x = citric.acid, y = fixed.acidity), data = df) +
   geom_point(alpha = 1/4) +
   geom_smooth(method = 'lm')
 
+# Calculate the correlation coefficient
 with(df, cor.test(citric.acid, fixed.acidity))
 ```
 
-We can see the high correlation here.
-Let's verify the correlation between citric.acid and other acids in the fixed.acidity.
+We can see the high correlation here. However the amount of citric acid in a wine compared to fixed acidity is much smaller. Maybe another effect here ? 
+Let's verify the correlation between citric.acid and other acids in the fixed.acidity. 
 
 ```{r echo=FALSE}
+# Make a scatterplot between citric acid and (fixed.acidity - citric.acid)
 ggplot(aes(x = citric.acid, y = fixed.acidity - citric.acid), data = df) +
   geom_point(alpha = 1/4) +
   geom_smooth(method = 'lm')
+
+# Calculate the correlation coefficient
 with(df, cor.test(citric.acid, fixed.acidity - citric.acid))
 ```
 
-We can see that correlation is only little but lower. It suggests that the wines with higher levels of citric acid will also have higher levels of other fixed acids.
+We can see that correlation is only little but lower. It suggests that the wines with higher levels of citric acid will also have higher levels of other fixed acids. This can be an interesting finding.
 
 We can also check if volatile acidity is correlated with a fixed acidity.
 
 ```{r echo=FALSE}
+# Make the scatterplot between volatile acidity and fixed acidity
 ggplot(aes(x = volatile.acidity, y = fixed.acidity), data = df) +
   geom_point(alpha = 1/4) +
   geom_smooth(method = 'lm')
 
+# Calculate the correlation coefficient
 with(df, cor.test(volatile.acidity, fixed.acidity))
 ```
 
 As we can see, the correlation is very small.
 
+Just curious, is density dependent on a fixed acidity ?
+
 Density vs. Fixed Acidity
 
 ```{r echo=FALSE}
+# Make the scatterplot between density and fixed acidity
 ggplot(aes(x = fixed.acidity, y = density), data = df) +
   geom_point(alpha = 1/4) +
-  #geom_line(stat = 'summary', fun.y = 'mean', color = 'green', size = 2)
   geom_smooth(method = 'lm')
 
+# Calculate the correlation coefficient
 with(df, cor.test(fixed.acidity, density))
 ```
 
-We see a positive correlation here. 
+We see a positive correlation here. Interesting finding, it is not straightforward that density would depend on acidity. Some common underlying factor could be a reason.
 
+How about density with chlorides ? Chlorides is salt and it is soluble in water, therefore we can expect the higher density with more salt. Let's plot them.
 
 Density vs. Chlorides
 ```{r echo=FALSE}
+# Make a scatterplot between cholrides and density
 ggplot(aes(x = chlorides, y = density), data = df) +
   geom_point(alpha = 1/4) 
+```
 
+There are some outliers, let's exclude them and plot again.
+
+```{r echo=FALSE}
+# Make a scatterplot between cholrides and density, excluding top 5% of chlorides, fit a line
 ggplot(aes(x = chlorides, y = density), data = df) +
   scale_x_continuous(limits = c(0, quantile(df$chlorides, 0.95)) ) +
   geom_point(alpha = 1/4) +
-  #geom_line(stat = 'summary', fun.y = 'mean', color = 'orange', size = 2)
   geom_smooth(method = 'lm')
 
-#with(df, cor.test(chlorides, density))
 ```
+
+The dependency is positive as expected.
+What about sugars ? Should be a similar story.
 
 Density vs. Residual Sugar
 ```{r echo=FALSE}
+# Make a scatterplot between residual sugar and density
 ggplot(aes(x = residual.sugar, y = density), data = df) +
   geom_point(alpha = 1/4) 
+```
 
-#exclude top 5% of residual.sugar
+Again, let's exclude the outliers.
+
+```{r echo=FALSE}
+#exclude top 5% of residual.sugar, fit a line
 ggplot(aes(x = residual.sugar, y = density), data = df) +
   scale_x_continuous(limits = c(0, quantile(df$residual.sugar, 0.95)) ) +
   geom_point(alpha = 1/4) +
@@ -320,29 +388,27 @@ ggplot(aes(x = residual.sugar, y = density), data = df) +
 
 ```
 
+Similarly, the positive dependency is observed.
+As a result, chlorides and residual sugars both add to density, which is logical, because they are soluble in water.
+
+Now an interesting question is how density is dependent on alcohol ?
+
 Density vs. Alcohol
 ```{r echo=FALSE}
+# Make a scatterplot between alcohol and density, fit a line
 ggplot(aes(x = alcohol, y = density), data = df) +
   geom_point(alpha = 1/4) +
   geom_smooth(method = 'lm')
 
 ```
 
-Chlorides and residual sugars both add to density, which is logical, because they are soluble in water. Wines with a higher alcohol level tend to have smaller density.
+Wines with a higher alcohol level tend to have smaller density.
 
-
-```{r echo=FALSE}
-#Sulphates vs. Total sulphur dioxide
-#ggplot(aes(x = sulphates, y = total.sulfur.dioxide), data = df) +
-#  geom_point(alpha = 1/4) +
-#  geom_smooth(method = 'lm')
-
-```
-
-Boxplot of features per quality rating:
+Now we will make many boxplots of features per quality rating. The goal is to find out on what features does the quality depend more.
 
 ```{r echo=FALSE}
 
+# Create boxplots of quality vs. other features
 for (feature in names(df)) {
   if (feature != 'quality') {
     print(ggplot(aes_string(x = 'quality', y = feature), data = df) +
@@ -350,6 +416,8 @@ for (feature in names(df)) {
   }
 }
 ```
+
+These plots show that quality has a linear dependency on volatile acidity, citric acid, sulphates and alcohol. There are other dependencies which do not appear to be linear.
 
 # Bivariate Analysis
 
@@ -377,57 +445,69 @@ for (feature in names(df)) {
 # Multivariate Plots Section
 
 
-```{r echo=FALSE}
-#Volatile Acidity vs. Fixed Acidity by Quality
-#ggplot(aes(x = fixed.acidity, y = volatile.acidity, color = quality), data = df) +
-#  geom_point() +
-#  scale_color_brewer(type = 'div',
-#    guide = guide_legend(title = 'Quality', reverse = T,
-#    override.aes = list(alpha = 1, size = 2))) 
-```
+To make multivariate plots, we will transform several continuous variable of interest into discrete by cutting them into bins. The width of the bins is chosen in a way to balance them. The chosen variables for binning are alcohol, citric acid and sulphates, because the bivariate analysis has shown the nice dependency of quality on these features. 
 
 ```{r echo=FALSE}
+# Create bins for alcohol
 df$alcohol.cut = cut(df$alcohol, c(min(df$alcohol) - 0.1, 10, 11, 12, max(df$alcohol)))
 #table(df$alcohol.cut)
-##table(df$quality, df$alcohol.cut)
-#ggplot(aes(x = quality, y = sulphates), data = df) +
-#  geom_boxplot(aes(fill = alcohol.cut)) +
-#  scale_fill_brewer(type = 'qual',
-#    guide = guide_legend(title = 'Alcohol Level', reverse = T,
-#    override.aes = list(alpha = 1, size = 1))) 
-#
-```
 
-```{r echo=FALSE}
+# Create bins for citric acid
 df$citric.acid.cut = cut(df$citric.acid, c(-0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1))
+#table(df$citric.acid.cut)
+
+# Create bins for sulphates
 df$sulphates.cut = cut(df$sulphates, c(min(df$sulphates) - 0.1, 0.5, 0.6, 0.7, 0.8, 2))
 #table(df$sulphates.cut)
+
 #df$volatile.acidity.cut = cut(df$volatile.acidity, c(seq(0, 1, 0.1), 1.6))
 #df$pH.cut = cut(df$pH, c(0, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4))
+```
 
+We will also exlcude from analysis the quality scores 3 and 8, because they have a much smaller number of observations compared to scores 4, 5, 6, and 7.
+
+```{r echo=FALSE}
+# Create a new dataframe with quality factors that have many observations
+# (3 and 8 have many fewer observations compared to 4,5,6,7)
 df1 = subset(df, quality %in% c(4, 5, 6, 7))
+```
 
+We will start with the analysis of quality variable as it is the main variable of interest. Because the quality is a factor variable, we will use boxplots and pick several combinations of variables. 
+
+How does quality depend on volatile acidity and citric acid ?
+Let's make two types of boxplots.
+
+```{r echo=FALSE}
+# Look at the boxplot between quality and volatile acidity using facet wrap by citric acid cut
 ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
   geom_boxplot() +
   facet_wrap(~ citric.acid.cut) +
   ggtitle('Volatile Acidity vs. Quality by Citric Acid level')
   
+# Look at the boxplot between quality and volatile acidity using by citric acid cut
+# using fill wrapper to create a different style of a multivariate boxplot
 ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
   geom_boxplot(aes(fill = citric.acid.cut)) +
-  #facet_wrap(~ citric.acid.cut) +
   scale_fill_brewer(type = 'qual',
     guide = guide_legend(title = 'Citric Acid', reverse = T,
     override.aes = list(alpha = 1, size = 0.5))) +
   ggtitle('Volatile Acidity vs. Quality by Citric Acid level')
 ```
 
+We find that given a citric acid level, the wine quality increases as volatile acidity decreases. And for the same quality level, wines with higher contents of the citric acid appear to have a smaller volatile acidity.
+
+How does quality depend on volatile acidity and alcohol ?
+Let's make two types of boxplots.
+
 ```{r echo=FALSE}
+# Look at the boxplot between quality and volatile acidity using facet wrap by aclohol cut, limit the y axis
 ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
   geom_boxplot() +
   facet_wrap(~ alcohol.cut, ncol = 4) +
   coord_cartesian(ylim = c(0.2, 1.2)) + 
   ggtitle('Volatile Acidity vs. Quality by Alcohol level')
   
+# Look at the boxplot between quality and volatile acidity using boxplot fill by aclohol cut, limit the y axis
 ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
   geom_boxplot(aes(fill = alcohol.cut)) +
   coord_cartesian(ylim = c(0.2, 1.2)) +
@@ -437,10 +517,13 @@ ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
   ggtitle('Volatile Acidity vs. Quality by Alcohol level')
 ```
 
+It can be seen that given an alcohol level, the wine quality increases as volatile acidity decreases. And for the same quality level, wines with higher contents of the alcohol appear to have a smaller volatile acidity.
+
+How does quality depend on volatile acidity and sulphates ?
+Let's make two types of boxplots.
+
 ```{r echo=FALSE}
-```
-  
-```{r echo=FALSE}
+# Look at the boxplot between quality and volatile acidity using facet wrap by sulphates cut, limit the y axis
 ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
   geom_boxplot() +
   coord_cartesian(ylim = c(0.2, 1.2)) +
@@ -449,6 +532,7 @@ ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
 ```
   
 ```{r echo=FALSE}
+# Look at the boxplot between quality and volatile acidity using boxplot fill by sulphates cut, limit the y axis
 ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
   geom_boxplot(aes(fill = sulphates.cut)) +
   coord_cartesian(ylim = c(0.2, 1.2)) +
@@ -458,7 +542,41 @@ ggplot(aes(x = quality, y = volatile.acidity), data = df1) +
   ggtitle('Volatile Acidity vs. Quality by Sulphates')
 ```
 
+We can see that given sulphates level, the wine quality increases as volatile acidity decreases. And for the same quality level, wines with higher contents of the sulphates appear to have a smaller volatile acidity.
+
+Now let's try scatterplots faceted by quality. It can give us additional insights into the data.
+
+First we can check Volatile Acidity vs. Alcohol by Quality.
+
 ```{r echo=FALSE}
+#Volatile Acidity vs. Alcohol by Quality
+ggplot(aes(x = alcohol, y = volatile.acidity, color = quality), data = df) +
+  geom_point() +
+  scale_color_brewer(type = 'div',
+    guide = guide_legend(title = 'Quality', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) 
+```
+
+We can see here the similar things, lower quality with higher volatile acidity given a level of alcohol. And given the alcohol level, the quality score if higher for a higher alcohol percentage.
+
+Next we can check Volatile Acidity vs. Sulphates by Quality.
+
+```{r echo=FALSE}
+#Volatile Acidity vs. Sulphates by Quality
+ggplot(aes(x = sulphates, y = volatile.acidity, color = quality), data = df) +
+  geom_point() +
+  scale_color_brewer(type = 'div',
+    guide = guide_legend(title = 'Quality', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) 
+```
+
+The similar picture is observed. Lower quality for higer volatile acidity given sulphates, and higher quality with higher sulphates given volatile acidity. Outliers exist as well.
+
+It is worth to see the dependency among variables, besides a quality variable.
+How are alcohol, volatile acidity and sulphates related ?
+
+```{r echo=FALSE}
+# Look at the boxplot between alcohol cut and volatile acidity using boxplot fill by sulphates cut, limit the y axis
 ggplot(aes(x = alcohol.cut, y = volatile.acidity), data = df1) +
   geom_boxplot(aes(fill = sulphates.cut)) +
   coord_cartesian(ylim = c(0.2, 1.2)) +
@@ -468,8 +586,11 @@ ggplot(aes(x = alcohol.cut, y = volatile.acidity), data = df1) +
   ggtitle('Volatile Acidity vs. Alcohol Level by Sulphates')
 ```
 
+That's interesting, for the given alcohol level, wines with higher levels of sulphates tend to have smaller volatile acidity.
+
 ```{r echo=FALSE}
 
+# Attempt to create a 3D scatterplot
 #library(rgl)
 #plot3d(df$fixed.acidity, df$citric.acid, df$pH)
 
@@ -484,6 +605,7 @@ ggplot(aes(x = alcohol.cut, y = volatile.acidity), data = df1) +
 
 Most of the analysis was dedicated to studying the dependency of wine quality on other features in the dataset.
 The analysis shows the following:
+
 - Given a citric acid level, the wine quality increases as volatile acidity decreases
 - For the same quality level, wines with higher contents of the citric acid appear to have a smaller volatile acidity
 - Given alcohol level, the wine quality increases as volatile acidity decreases
@@ -515,7 +637,7 @@ ggplot(aes(x = fixed.acidity, y = density), data = df) +
 
 ### Description One
 
-In the plot above we observe a positive correlation between density and a fixed acidity.
+In the plot above we observe a positive dependency between density and a fixed acidity.
  The similar relashionship is found for 'density vs. sugars' and 'density vs. chlorides'. While almost everybody knows that sugar and salt are soluble in water and therefore would add to density, not everyone knows that wines with higher fixed acidity tend to have a higher density. 
 
 ### Plot Two
